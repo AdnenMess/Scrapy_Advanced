@@ -1,0 +1,56 @@
+
+
+
+
+
+
+
+
+
+version: '2'
+
+services:
+    haproxy:
+        image: haproxy:1.7
+        ports:
+            # stats
+            - "8036:8036"
+
+            # splash
+            - "8050:8050"
+        links:
+            - splash0
+            - splash1
+            - splash2
+        volumes:
+            - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+
+    splash0:
+        image: scrapinghub/splash:latest
+        command: --max-timeout 3600 --slots 5 --maxrss 3000 --verbosity 1
+        expose:
+            - 8050
+        mem_limit: 4200m
+        memswap_limit: 5400m
+        restart: always
+
+    splash1:
+        image: scrapinghub/splash:latest
+        command: --max-timeout 3600 --slots 5 --maxrss 3000 --verbosity 1
+        expose:
+            - 8050
+        mem_limit: 4200m
+        memswap_limit: 5400m
+        restart: always
+
+    splash2:
+        image: scrapinghub/splash:latest
+        command: --max-timeout 3600 --slots 5 --maxrss 3000 --verbosity 1
+        expose:
+            - 8050
+        mem_limit: 4200m
+        memswap_limit: 5400m
+        restart: always
+
+
+    
