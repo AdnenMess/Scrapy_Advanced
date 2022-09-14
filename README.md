@@ -11,7 +11,7 @@
   - [Try to consume the API](#Try-to-consume-the-API)
   - [GET Data Directly from browser](#GET-Data-Directly-from-browser)
   - [Pagination](#Pagination)
-  - [Limit Item Scraped](#Limit Item Scraped)
+  - [Limit Item Scraped](#Limit-Item-Scraped)
 
 ## Centric Canada
 
