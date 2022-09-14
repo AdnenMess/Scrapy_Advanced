@@ -11,6 +11,7 @@
   - [Try to consume the API](#Try-to-consume-the-API)
   - [GET Data Directly from browser](#GET-Data-Directly-from-browser)
   - [Pagination](#Pagination)
+  - [Limit Item Scraped](#Limit Item Scraped)
 
 ## Centric Canada
 
@@ -272,4 +273,11 @@ if next_page:
   yield scrapy.Request(url=next_page, callback=self.parse)
 ```
 ***
+### Limit Item Scraped
 
+To limit the number or Item to scrap at 100, we have to go at `settings.py`
+and  add:
+
+```python
+CLOSESPIDER_ITEMCOUNT = 100
+```
