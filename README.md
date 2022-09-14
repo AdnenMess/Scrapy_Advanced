@@ -7,9 +7,10 @@
     - [GET DATA (HTML Format) from the API](#GET-DATA-from-the-API)
     - [Use optimize Splash](#Use-optimize-Splash)
     - [AQUARIUM](#AQUARIUM)
-- [**Steam Project**](#Steam Project)
+- [**Steam Project**](#Steam-Project)
   - [Try to consume the API](#Try-to-consume-the-API)
   - [GET Data Directly from browser](#GET-Data-Directly-from-browser)
+  - [Pagination](#Pagination)
 
 ## Centric Canada
 
@@ -257,4 +258,18 @@ if we add `&page=1` we have a webpage like that:
 ![pages](Snapshot/pages.png)
 
 --> Now we can handle pagination
+***
+
+### Pagination
+
+To handle the pagination, in the xpath expression we have to use 
+`@class='pagebtn' and text()='>'` to target next page button
+
+```python
+next_page = response.xpath("//a[@class='pagebtn' and text()='>']/@href").get()
+
+if next_page:
+  yield scrapy.Request(url=next_page, callback=self.parse)
+```
+***
 
