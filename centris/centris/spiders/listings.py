@@ -108,7 +108,7 @@ class ListingsSpider(scrapy.Spider, ABC):
         # to get the HTML response we go in GetInscriptions / Preview -> d: Result : html
         html = resp_dict.get('d').get('Result').get('html')
         # print(html)
-        # with open('index.html', 'w') as f:
+        # with open('steam.html', 'w') as f:
         #     f.write(html)
 
         sel = Selector(text=html)       # convert string to selector object so we can use xpath

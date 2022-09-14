@@ -7,6 +7,9 @@
     - [GET DATA (HTML Format) from the API](#GET-DATA-from-the-API)
     - [Use optimize Splash](#Use-optimize-Splash)
     - [AQUARIUM](#AQUARIUM)
+- [**Steam Project**](#Steam Project)
+  - [Try to consume the API](#Try-to-consume-the-API)
+  - [GET Data Directly from browser](#GET-Data-Directly-from-browser)
 
 ## Centric Canada
 
@@ -199,4 +202,59 @@ def parse(self, response, **kwargs):
             }
         )
 ```
+***
+## Steam Project
+
+### Try to consume the API
+
+![API](Snapshot/staeamAPI.png)
+
+After locate the API, we try to connect
+
+```python
+import scrapy
+
+def start_requests(self):
+    yield scrapy.Request(
+        url="https://store.steampowered.com/search/results/?query&start=0&count=50&dynamic_data="
+            "&sort_by=_ASC&snr=1_7_7_7000_7&filter=topsellers&infinite=1", 
+        method="GET", 
+        headers={'X-Requested-With': 'XMLHttpRequest', 'X-Prototype-Version': '1.7'},
+        callback=self.parse,
+        meta={'start': 0}
+        )
+```
+
+but after we connect to API
+
+```python
+import json
+from scrapy import Selector
+
+def parse(self, response, **kwargs):
+    response_dict = json.loads(response.body)
+    my_html = response_dict.get('results_html')
+    html_selector = Selector(text=my_html)
+```
+The HTML response is like that
+
+![Bad](Snapshot/response.png)
+
+--> So **we can't extract anything** from the API
+***
+### GET Data Directly from browser
+
+- Since we are getting response from GET method, 
+we can scrape data directly from web browser
+
+- Before jump directly to second method, let's first analyse
+the URL of steam 
+
+`https://store.steampowered.com/search/?filter=topsellers`
+
+if we add `&page=1` we have a webpage like that:
+
+![pages](Snapshot/pages.png)
+
+--> Now we can handle pagination
 
