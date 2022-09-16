@@ -12,6 +12,7 @@
   - [GET Data Directly from browser](#GET-Data-Directly-from-browser)
   - [Pagination](#Pagination)
   - [Limit Item Scraped](#Limit-Item-Scraped)
+  - [Working with Items](#Working-with-Items)
 
 ## Centric Canada
 
@@ -281,3 +282,88 @@ and  add:
 ```python
 CLOSESPIDER_ITEMCOUNT = 100
 ```
+***
+
+### Working with Items
+
+The spider-class (BestSellingSpider) itself should only responsible for following links
+and return data back to us
+
+So all methods and functions witch are responsible for processing some field we have should
+not leave in spider-class itself but should be moved in `items.py`
+
+- So in the spider-class we should use an item loader class (it just load class we defined in item.py)
+```python
+from scrapy.loader import ItemLoader
+from ..items import SteamItem
+import scrapy
+
+
+class BestSellingSpider(scrapy.Spider):
+    name = 'best_selling'
+    allowed_domains = ['store.steampowered.com']
+    start_urls = [f'https://store.steampowered.com/search/?filter=topsellers&page=1']
+
+    def parse(self, response, **kwargs):
+        games = response.xpath("//div[@id='search_resultsRows']/a")
+        for game in games:
+            loader = ItemLoader(item=SteamItem(), selector=game, response=response)
+            loader.add_xpath('game_url', ".//@href")
+            loader.add_xpath('img_url', ".//div[@class='col search_capsule']/img/@src")
+            loader.add_xpath('game_name', ".//span[@class='title']/text()")
+            loader.add_xpath('release_date', ".//div[contains(@class, 'col search_released')]/text()")
+            loader.add_xpath('platforms', ".//span[@class='vr_supported' or contains(@class, 'platform_img')]/@class")
+            loader.add_xpath('reviews_summary', ".//span[contains(@class, 'search_review_summary')]/@data-tooltip-html")
+            loader.add_xpath('discount_rate', ".//div[contains(@class, 'search_discount')]/span/text()")
+            loader.add_xpath('original_price', ".//div[contains(@class, 'search_price_discount_combined')]")
+            loader.add_xpath('discount_price', "(.//div[contains(@class, 'search_price discounted')]/text())[2]")
+            yield loader.load_item()
+
+        next_page = response.xpath("//a[@class='pagebtn' and text()='>']/@href").get()
+        if next_page:
+            yield scrapy.Request(url=next_page, callback=self.parse)
+```
+
+-  In `items.py` we need de define all items and functions we use in our data processing
+```python
+import scrapy
+from scrapy.loader.processors import TakeFirst, MapCompose, Join
+
+
+def remove_html(review_summary):
+    pass
+
+def get_platforms(one_classes):
+    pass
+
+def get_original_price(html_markup):
+    pass
+
+def clean_discount_rate(discount_rate):
+    pass
+
+def clean_discount_price(discount_price):
+    pass
+
+class SteamItem(scrapy.Item):
+    game_url = scrapy.Field(output_processor=TakeFirst())  
+    # output_processor=TakeFirst() convert a list to string
+    img_url = scrapy.Field(output_processor=TakeFirst())
+    game_name = scrapy.Field(output_processor=TakeFirst())
+    release_date = scrapy.Field(output_processor=TakeFirst())
+    platforms = scrapy.Field(input_processor=MapCompose(get_platforms))
+    reviews_summary = scrapy.Field(input_processor=MapCompose(remove_html),
+                                   output_processor=TakeFirst()
+                                   )
+    original_price = scrapy.Field(input_processor=MapCompose(get_original_price, str.strip),
+                                  output_processor=Join('')
+                                  )
+    discount_price = scrapy.Field(input_processor=MapCompose(clean_discount_price),
+                                  output_processor=TakeFirst()
+                                  )
+    discount_rate = scrapy.Field(input_processor=MapCompose(clean_discount_rate),
+                                 output_processor=TakeFirst()
+                                 )
+
+```
+***
