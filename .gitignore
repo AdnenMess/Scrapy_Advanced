@@ -1,4 +1,7 @@
 .idea/
-models/
 venv/
+models/
 aquarium/
+Web_Fask_Steam/static/
+steam/logs/
+steam/.scrapy/
