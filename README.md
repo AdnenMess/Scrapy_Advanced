@@ -13,6 +13,10 @@
   - [Pagination](#Pagination)
   - [Limit Item Scraped](#Limit-Item-Scraped)
   - [Working with Items](#Working-with-Items)
+  - [ScrapyRT](#ScrapyRT)
+- [**Zillow Project**](#Zillow-Project)
+  - [Cookies](#Cookies)
+  - [Pagination From Payload](#Pagination-From-Payload)
 
 ## Centric Canada
 
@@ -365,5 +369,66 @@ class SteamItem(scrapy.Item):
                                  output_processor=TakeFirst()
                                  )
 
+```
+***
+
+### ScrapyRT
+
+- To see the result on the browser, we can use scrapyRT
+
+```shell
+pip install scrapyrt
+```
+
+- To run scrapyRT :
+  - `scrapy -p 9000`
+  - Open Chrome : `127.0.0.1:9000/crawl.json?start_requests=true&spider_name=best_selling`
+- To limit the number of Items, in `settings.py`:
+
+```python
+CLOSESPIDER_ITEMCOUNT = 100
+HTTPCACHE_ENABLE = True
+HTTPCACHE_EXPIRATION_SECS = 3600
+```
+***
+## Zillow Project
+
+### Cookies
+
+To fetch an api we need the links of that api and also the cookies. 
+
+Best practice is to define a function where we insert the entire cookie, 
+and it will convert to a cookie request
+
+```python
+from http.cookies import SimpleCookie
+
+def cookie_parser():
+    cookie_string = "zguid=24|%2412f6bae2-de68-4071-a705-8a475e662535 ......"
+    cookie = SimpleCookie()
+    cookie.load(cookie_string)
+    cookies = {}
+    for key, morsel in cookie.items():
+        cookies[key] = morsel.value
+    return cookies
+```
+***
+### Pagination From Payload
+
+To extract the pagination from Payload and inject it into the URL we use this function
+
+```python
+from urllib.parse import urlparse, parse_qs, urlencode
+import json
+
+def parse_new_url(url, page_number):
+    url_parsed = urlparse(url)
+    query_string = parse_qs(url_parsed.query)
+    search_query_state = json.loads(query_string.get('searchQueryState')[0])
+    search_query_state['pagination'] = {"currentPage": page_number}
+    query_string.get('searchQueryState')[0] = search_query_state
+    encoded_qs = urlencode(query_string, doseq=1)
+    new_url = f"https://www.zillow.com/search/GetSearchPageState.htm?{encoded_qs}"
+    return new_url
 ```
 ***
