@@ -20,7 +20,7 @@ class ZillowHousesSpider(scrapy.Spider):
         for house in houses:
             loader = ItemLoader(item=ZillowItem())
             loader.add_value('id', house.get('id'))
-            loader.add_value('img_src', house.get('imgSrc'))
+            loader.add_value('image_urls', house.get('imgSrc'))
             loader.add_value('detail_url', house.get('detailUrl'))
             loader.add_value('status_type', house.get('statusType'))
             loader.add_value('status_text', house.get('statusText'))

@@ -17,6 +17,7 @@
 - [**Zillow Project**](#Zillow-Project)
   - [Cookies](#Cookies)
   - [Pagination From Payload](#Pagination-From-Payload)
+  - [Media Pipelines](#Media-Pipelines)
 
 ## Centric Canada
 
@@ -431,4 +432,53 @@ def parse_new_url(url, page_number):
     new_url = f"https://www.zillow.com/search/GetSearchPageState.htm?{encoded_qs}"
     return new_url
 ```
+***
+### Media Pipelines
+
+`pip install pillow`
+
+
+To webscrape & store images:
+
+1- In `items.py` we need to define those two items :
+```python
+import scrapy
+
+
+image_urls = scrapy.Field()
+images = scrapy.Field()
+```
+
+2- In `zillow_houses.py` we need to define :
+```python
+loader.add_value('image_urls', house.get('imgSrc'))
+```
+
+3- In `settings.py` we need to activate :
+```python
+ITEM_PIPELINES = {
+   'zillow.pipelines.ZillowPipeline': 1,
+}
+
+IMAGES_STORE = '.'
+```
+
+4- In `pipelines.py` we define the class as below:
+```python
+from itemadapter import ItemAdapter
+from scrapy.pipelines.images import ImagesPipeline
+from scrapy.http import Request
+
+
+class ZillowPipeline(ImagesPipeline):
+    def get_media_requests(self, item, info):
+        urls = ItemAdapter(item).get(self.images_urls_field, [])
+        return [Request(u, meta={'houseID': item.get('id')}) for u in urls]
+
+    def file_path(self, request, response=None, info=None, *, item=None):
+        image_name = request.meta['houseID']
+        return f'full/{image_name}.jpg'
+```
+
+- As result, we will have all the images store in folder call `full`
 ***
